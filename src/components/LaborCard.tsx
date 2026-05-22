@@ -13,8 +13,16 @@ const TONE_TEXT: Record<Props['tone'], string> = {
   warn: 'text-[var(--orange)]',
 };
 
+// Same color the headline number uses. Keeps bar tone consistent with the %.
+const TONE_GRADIENT: Record<Props['tone'], string> = {
+  good: 'linear-gradient(90deg, var(--green), #3fe07d)',
+  ok:   'linear-gradient(90deg, var(--accent), #7bb8ff)',
+  warn: 'linear-gradient(90deg, var(--orange), #ffb380)',
+};
+
 export function LaborCard({ laborPct, laborDkk, totalRevenue, tone }: Props) {
-  const fillPct = Math.min(laborPct * 2.5, 100);
+  // Bar fills proportionally to the actual ratio, capped at 100% visually.
+  const fillPct = Math.min(Math.max(laborPct, 0), 100);
   return (
     <div className="bg-[var(--panel)] border border-[var(--border)] rounded-2xl p-4">
       <div className="flex justify-between items-baseline mb-3">
@@ -25,7 +33,7 @@ export function LaborCard({ laborPct, laborDkk, totalRevenue, tone }: Props) {
       </div>
       <div className="h-2 bg-[var(--panel-2)] rounded mb-2.5 overflow-hidden">
         <div className="h-full rounded transition-[width] duration-500"
-             style={{ width: `${fillPct}%`, background: 'linear-gradient(90deg, var(--green), #3fe07d)' }} />
+             style={{ width: `${fillPct}%`, background: TONE_GRADIENT[tone] }} />
       </div>
       <div className="flex justify-between text-[11px] text-[var(--text-muted)]">
         <span>Labor <b className="text-[var(--text)] font-semibold">{fmtN(laborDkk)} DKK</b></span>
