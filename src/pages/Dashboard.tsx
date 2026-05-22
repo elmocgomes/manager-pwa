@@ -114,10 +114,11 @@ export function Dashboard() {
         </section>
 
         <div className="text-[11px] text-[var(--text-muted)] uppercase tracking-[0.18em] mt-3.5 mb-1.5 ml-1">
-          Drinks vs Dining
+          Drinks vs Food
         </div>
         <section className="mb-3">
           <SplitCard
+            totalRevenue={summary?.total_revenue ?? 0}
             drinksRevenue={summary?.drinks_revenue ?? 0}
             drinksGuests={summary?.drinks_guests ?? 0}
             drinksAvg={summary?.drinks_avg ?? 0}
