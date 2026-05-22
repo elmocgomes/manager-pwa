@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SessionProvider } from './contexts/SessionContext';
 import { AuthGate } from './components/AuthGate';
 import { ProfileProvider, useUserProfile } from './contexts/ProfileContext';
 
@@ -22,11 +23,13 @@ function DashboardStub() {
 export default function App() {
   return (
     <QueryClientProvider client={qc}>
-      <AuthGate>
-        <ProfileProvider>
-          <DashboardStub />
-        </ProfileProvider>
-      </AuthGate>
+      <SessionProvider>
+        <AuthGate>
+          <ProfileProvider>
+            <DashboardStub />
+          </ProfileProvider>
+        </AuthGate>
+      </SessionProvider>
     </QueryClientProvider>
   );
 }

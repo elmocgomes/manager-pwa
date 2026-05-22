@@ -1,24 +1,28 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
+type Msg = { kind: 'err' | 'ok'; text: string } | null;
+
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [msg, setMsg] = useState<Msg>(null);
   const [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null); setBusy(true);
+    setMsg(null); setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) setError(error.message);
+    if (error) setMsg({ kind: 'err', text: error.message });
   }
   async function magicLink() {
-    setError(null); setBusy(true);
+    setMsg(null); setBusy(true);
     const { error } = await supabase.auth.signInWithOtp({ email });
     setBusy(false);
-    setError(error ? error.message : 'Check your email for the link');
+    setMsg(error
+      ? { kind: 'err', text: error.message }
+      : { kind: 'ok', text: 'Check your email for the link' });
   }
 
   return (
@@ -31,8 +35,8 @@ export function Login() {
         <input type="password" required placeholder="password"
           value={password} onChange={e => setPassword(e.target.value)}
           className="w-full bg-[var(--panel-2)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm" />
-        {error && <div className="text-xs text-rose-400">{error}</div>}
-        <button disabled={busy} className="w-full bg-[var(--accent)] text-white rounded-lg py-2 text-sm font-medium">
+        {msg && <div className={msg.kind === 'err' ? 'text-xs text-rose-400' : 'text-xs text-emerald-400'}>{msg.text}</div>}
+        <button type="submit" disabled={busy} className="w-full bg-[var(--accent)] text-white rounded-lg py-2 text-sm font-medium">
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
         <button type="button" onClick={magicLink} disabled={busy || !email}
