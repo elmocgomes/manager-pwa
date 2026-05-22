@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { useClosingNote } from '../hooks/useClosingNote';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useClosingNote, type ClosingNote } from '../hooks/useClosingNote';
 import { supabase } from '../lib/supabase';
 
 type Props = {
@@ -21,26 +21,45 @@ export function ClosingNoteCard({ restaurantId, businessDate, isToday, authorId,
   const qc = useQueryClient();
   const { data } = useClosingNote(restaurantId, businessDate);
   const [body, setBody] = useState('');
-  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const key = ['closingNote', restaurantId, businessDate];
+
+  const mutation = useMutation({
+    mutationFn: async (text: string) => {
+      const { error } = await supabase.from('closing_notes').upsert({
+        restaurant_id: restaurantId,
+        business_date: businessDate,
+        author_id: authorId,
+        author_name: authorName,
+        body: text,
+      }, { onConflict: 'restaurant_id,business_date', ignoreDuplicates: true });
+      if (error) throw error;
+    },
+    onMutate: async (text) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<ClosingNote | null>(key);
+      qc.setQueryData<ClosingNote | null>(key, {
+        id: 'optimistic',
+        restaurant_id: restaurantId,
+        business_date: businessDate,
+        author_name: authorName,
+        body: text,
+        submitted_at: new Date().toISOString(),
+      });
+      return { prev };
+    },
+    onError: (e, _text, ctx) => {
+      if (ctx) qc.setQueryData(key, ctx.prev);
+      setErr((e as Error).message);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: key }),
+  });
 
   async function submit() {
-    if (!body.trim()) return;
-    setBusy(true); setErr(null);
-    const { error } = await supabase.from('closing_notes').insert({
-      restaurant_id: restaurantId,
-      business_date: businessDate,
-      author_id: authorId,
-      author_name: authorName,
-      body: body.trim(),
-    });
-    setBusy(false);
-    if (error) {
-      setErr(error.message);
-    } else {
-      setBody('');
-      qc.invalidateQueries({ queryKey: ['closingNote', restaurantId, businessDate] });
-    }
+    const text = body.trim();
+    if (!text || mutation.isPending) return;
+    setErr(null);
+    try { await mutation.mutateAsync(text); setBody(''); } catch { /* handled in onError */ }
   }
 
   return (
@@ -63,7 +82,7 @@ export function ClosingNoteCard({ restaurantId, businessDate, isToday, authorId,
         <div className="space-y-2">
           <textarea
             value={body}
-            onChange={e => setBody(e.target.value)}
+            onChange={e => { setBody(e.target.value); if (err) setErr(null); }}
             placeholder="How did tonight go?"
             rows={4}
             className="w-full bg-[var(--panel-2)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] resize-vertical"
@@ -71,10 +90,10 @@ export function ClosingNoteCard({ restaurantId, businessDate, isToday, authorId,
           {err && <div className="text-xs text-rose-400">{err}</div>}
           <button
             onClick={submit}
-            disabled={busy || !body.trim()}
+            disabled={mutation.isPending || !body.trim()}
             className="w-full bg-[var(--accent)] text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50"
           >
-            {busy ? 'Submitting…' : 'Submit closing note'}
+            {mutation.isPending ? 'Submitting…' : 'Submit closing note'}
           </button>
         </div>
       ) : (

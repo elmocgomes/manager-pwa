@@ -18,4 +18,11 @@ describe('BookingsCard', () => {
     render(<BookingsCard bookingsServed={30} walkinsServed={20} bookingsToCome={5} isToday={false} />);
     expect(screen.queryByText(/Bookings still to come/i)).toBeNull();
   });
+  it('renders an empty bar when both counts are 0', () => {
+    const { container } = render(<BookingsCard bookingsServed={0} walkinsServed={0} bookingsToCome={0} isToday={true} />);
+    const bars = container.querySelectorAll('[style*="width"]');
+    bars.forEach(bar => {
+      expect((bar as HTMLElement).style.width).toBe('0%');
+    });
+  });
 });

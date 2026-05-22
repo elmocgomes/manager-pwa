@@ -19,7 +19,7 @@ export function SplitCard(p: Props) {
           {fmtN(p.drinksRevenue)} <span className="text-[15px] text-[var(--text-muted)] font-normal">DKK</span>
         </div>
         <div className="text-[11px] text-[var(--text-muted)] mt-1">
-          <b className="text-[var(--text)] font-semibold">{p.drinksGuests}</b> guests · avg <b className="text-[var(--text)] font-semibold">{fmtN(p.drinksAvg)}</b>
+          <b className="text-[var(--text)] font-semibold">{p.drinksGuests}</b> guests · avg <b className="text-[var(--text)] font-semibold">{p.drinksGuests > 0 ? fmtN(p.drinksAvg) : '—'}</b>
         </div>
       </div>
       <div className="pl-2">
@@ -29,7 +29,7 @@ export function SplitCard(p: Props) {
           {fmtN(p.diningRevenue)} <span className="text-[15px] text-[var(--text-muted)] font-normal">DKK</span>
         </div>
         <div className="text-[11px] text-[var(--text-muted)] mt-1">
-          <b className="text-[var(--text)] font-semibold">{p.diningGuests}</b> guests · avg <b className="text-[var(--text)] font-semibold">{fmtN(p.diningAvg)}</b>
+          <b className="text-[var(--text)] font-semibold">{p.diningGuests}</b> guests · avg <b className="text-[var(--text)] font-semibold">{p.diningGuests > 0 ? fmtN(p.diningAvg) : '—'}</b>
         </div>
       </div>
     </div>

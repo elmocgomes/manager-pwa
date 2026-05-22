@@ -5,7 +5,7 @@ import { ClosingNoteCard } from './ClosingNoteCard';
 import type { ReactNode } from 'react';
 
 const maybeSingle = vi.fn();
-const insert = vi.fn();
+const upsert = vi.fn();
 vi.mock('../lib/supabase', () => ({
   supabase: {
     from: () => ({
@@ -14,7 +14,7 @@ vi.mock('../lib/supabase', () => ({
           eq: () => ({ maybeSingle: () => maybeSingle() }),
         }),
       }),
-      insert: (...args: unknown[]) => insert(...args),
+      upsert: (...args: unknown[]) => upsert(...args),
     }),
   },
 }));
@@ -25,7 +25,7 @@ const wrapper = ({ children }: { children: ReactNode }) => {
 };
 
 describe('ClosingNoteCard', () => {
-  beforeEach(() => { maybeSingle.mockReset(); insert.mockReset(); });
+  beforeEach(() => { maybeSingle.mockReset(); upsert.mockReset(); });
 
   it('renders read-only when a note exists', async () => {
     maybeSingle.mockResolvedValue({
@@ -54,19 +54,35 @@ describe('ClosingNoteCard', () => {
     await waitFor(() => expect(screen.getByText(/No closing note submitted/i)).toBeInTheDocument());
   });
 
-  it('calls supabase.insert on submit', async () => {
+  it('calls supabase.upsert on submit', async () => {
     maybeSingle.mockResolvedValue({ data: null, error: null });
-    insert.mockResolvedValue({ error: null });
+    upsert.mockResolvedValue({ error: null });
     render(<ClosingNoteCard restaurantId="r1" businessDate="2026-05-22"
               isToday={true} authorId="u1" authorName="Mads" />, { wrapper });
     await waitFor(() => screen.getByPlaceholderText('How did tonight go?'));
     fireEvent.change(screen.getByPlaceholderText('How did tonight go?'),
       { target: { value: 'Roligt aften.' } });
     fireEvent.click(screen.getByRole('button', { name: /Submit closing note/i }));
-    await waitFor(() => expect(insert).toHaveBeenCalled());
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
-      restaurant_id: 'r1', business_date: '2026-05-22',
-      author_id: 'u1', author_name: 'Mads', body: 'Roligt aften.',
-    }));
+    await waitFor(() => expect(upsert).toHaveBeenCalled());
+    expect(upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        restaurant_id: 'r1', business_date: '2026-05-22',
+        author_id: 'u1', author_name: 'Mads', body: 'Roligt aften.',
+      }),
+      expect.objectContaining({ onConflict: 'restaurant_id,business_date' })
+    );
+  });
+
+  it('shows error and keeps textarea on insert failure', async () => {
+    maybeSingle.mockResolvedValue({ data: null, error: null });
+    upsert.mockResolvedValue({ error: { message: 'permission denied' } });
+    render(<ClosingNoteCard restaurantId="r1" businessDate="2026-05-22"
+              isToday={true} authorId="u1" authorName="Mads" />, { wrapper });
+    await waitFor(() => screen.getByPlaceholderText('How did tonight go?'));
+    const ta = screen.getByPlaceholderText('How did tonight go?') as HTMLTextAreaElement;
+    fireEvent.change(ta, { target: { value: 'Roligt aften.' } });
+    fireEvent.click(screen.getByRole('button', { name: /Submit closing note/i }));
+    await waitFor(() => expect(screen.getByText(/permission denied/i)).toBeInTheDocument());
+    expect(ta.value).toBe('Roligt aften.');  // body preserved on error
   });
 });

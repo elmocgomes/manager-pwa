@@ -7,8 +7,9 @@ type Props = {
 
 export function BookingsCard({ bookingsServed, walkinsServed, bookingsToCome, isToday }: Props) {
   const totalServed = bookingsServed + walkinsServed;
-  const bookingPct = totalServed > 0 ? Math.round((bookingsServed / totalServed) * 100) : 0;
-  const walkinPct = 100 - bookingPct;
+  const hasData = totalServed > 0;
+  const bookingPct = hasData ? Math.round((bookingsServed / totalServed) * 100) : 0;
+  const walkinPct = hasData ? 100 - bookingPct : 0;
 
   return (
     <div className="bg-[var(--panel)] border border-[var(--border)] rounded-2xl p-4">

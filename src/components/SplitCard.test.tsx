@@ -11,4 +11,10 @@ describe('SplitCard', () => {
     expect(screen.getByText('Drinks only')).toBeInTheDocument();
     expect(screen.getByText('Dining')).toBeInTheDocument();
   });
+  it('renders "—" for avg when guest count is 0', () => {
+    render(<SplitCard drinksRevenue={0} drinksGuests={0} drinksAvg={0}
+                      diningRevenue={48600} diningGuests={56} diningAvg={868} />);
+    const dashes = screen.getAllByText('—');
+    expect(dashes.length).toBeGreaterThanOrEqual(1);
+  });
 });
