@@ -12,6 +12,7 @@ export function RestaurantToggle({ restaurants, selected, onSelect }: Props) {
          style={{ gridTemplateColumns: `repeat(${restaurants.length}, 1fr)` }}>
       {restaurants.map(r => (
         <button key={r.slug} onClick={() => onSelect(r.slug)}
+          aria-pressed={r.slug === selected}
           className={[
             'border-0 text-base font-medium p-2.5 rounded-lg cursor-pointer transition-all',
             r.slug === selected

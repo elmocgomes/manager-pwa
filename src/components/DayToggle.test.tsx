@@ -15,4 +15,9 @@ describe('DayToggle', () => {
     fireEvent.click(screen.getByText('Yesterday'));
     expect(onSelect).toHaveBeenCalledWith(1);
   });
+  it('marks the selected day as aria-pressed', () => {
+    render(<DayToggle selected={1} onSelect={() => {}} />);
+    expect(screen.getByText('Yesterday').closest('button')?.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText('Today').closest('button')?.getAttribute('aria-pressed')).toBe('false');
+  });
 });

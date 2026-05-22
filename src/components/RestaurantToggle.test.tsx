@@ -23,4 +23,9 @@ describe('RestaurantToggle', () => {
     const { container } = render(<RestaurantToggle restaurants={[]} selected="" onSelect={() => {}} />);
     expect(container.firstChild).toBeNull();
   });
+  it('marks the selected button as aria-pressed', () => {
+    render(<RestaurantToggle restaurants={rests} selected="maven" onSelect={() => {}} />);
+    expect(screen.getByText('Maven').getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText('Cholon').getAttribute('aria-pressed')).toBe('false');
+  });
 });

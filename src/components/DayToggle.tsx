@@ -24,6 +24,7 @@ export function DayToggle({ selected, onSelect }: Props) {
         const active = offset === selected;
         return (
           <button key={offset} onClick={() => onSelect(offset)}
+            aria-pressed={active}
             className={[
               'border-0 text-xs font-medium px-1 py-2 rounded-[7px] cursor-pointer transition-all leading-tight',
               active
