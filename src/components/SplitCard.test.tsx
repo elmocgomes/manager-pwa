@@ -3,20 +3,22 @@ import { render, screen } from '@testing-library/react';
 import { SplitCard } from './SplitCard';
 
 describe('SplitCard', () => {
-  it('renders drinks + food revenue, %, and labels', () => {
-    render(<SplitCard totalRevenue={32500}
-                      drinksRevenue={10175} drinksGuests={88} drinksAvg={116}
-                      diningRevenue={22665} diningGuests={123} diningAvg={184} />);
-    expect(screen.getByText(/10\.175|10,175/)).toBeInTheDocument();
-    expect(screen.getByText(/22\.665|22,665/)).toBeInTheDocument();
-    expect(screen.getByText('Drinks')).toBeInTheDocument();
-    expect(screen.getByText('Food')).toBeInTheDocument();
-    // Percentages of total
-    expect(screen.getByText('31%')).toBeInTheDocument();
-    expect(screen.getByText('70%')).toBeInTheDocument();
+  it('renders drinks-only + dining revenue with labels and percents', () => {
+    // Drinks-only: 615 DKK across 5 bar-only customers, avg 123/customer
+    // Dining: 31,922 DKK across 45 dining customers, avg 709/customer
+    render(<SplitCard totalRevenue={32537}
+                      drinksRevenue={615} drinksGuests={5} drinksAvg={123}
+                      diningRevenue={31922} diningGuests={45} diningAvg={709} />);
+    expect(screen.getByText(/615/)).toBeInTheDocument();
+    expect(screen.getByText(/31\.922|31,922/)).toBeInTheDocument();
+    expect(screen.getByText('Drinks only')).toBeInTheDocument();
+    expect(screen.getByText('Dining')).toBeInTheDocument();
+    // 615/32537 ≈ 2%, 31922/32537 ≈ 98%
+    expect(screen.getByText('2%')).toBeInTheDocument();
+    expect(screen.getByText('98%')).toBeInTheDocument();
   });
 
-  it('renders "—" for avg when item count is 0', () => {
+  it('renders "—" for avg when customer count is 0', () => {
     render(<SplitCard totalRevenue={48600}
                       drinksRevenue={0} drinksGuests={0} drinksAvg={0}
                       diningRevenue={48600} diningGuests={56} diningAvg={868} />);

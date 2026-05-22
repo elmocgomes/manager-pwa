@@ -114,7 +114,7 @@ export function Dashboard() {
         </section>
 
         <div className="text-[11px] text-[var(--text-muted)] uppercase tracking-[0.18em] mt-3.5 mb-1.5 ml-1">
-          Drinks vs Food
+          Drinks vs Dining
         </div>
         <section className="mb-3">
           <SplitCard
