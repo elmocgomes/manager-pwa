@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useUserProfile } from '../contexts/ProfileContext';
 import { useDaySummary } from '../hooks/useDaySummary';
+import { useRealtimeInvalidation } from '../hooks/useRealtimeInvalidation';
 import { UserStrip } from '../components/UserStrip';
 import { Header } from '../components/Header';
 import { RestaurantToggle } from '../components/RestaurantToggle';
@@ -66,6 +67,7 @@ export function Dashboard() {
   const businessDate = isoDate(day);
   const isToday = day === 0;
   const { data: summary, isPending } = useDaySummary(restaurant?.id, businessDate, isToday);
+  useRealtimeInvalidation(restaurant?.id, isToday);
 
   if (!restaurant) {
     return (

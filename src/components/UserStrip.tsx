@@ -1,11 +1,16 @@
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
+
 type Props = { fullName: string; version: string };
 
 function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
+  const trimmed = name.trim();
+  if (!trimmed) return '?';
+  const parts = trimmed.split(/\s+/);
   return parts.slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join('');
 }
 
 export function UserStrip({ fullName, version }: Props) {
+  const online = useOnlineStatus();
   return (
     <div className="flex justify-between items-center mb-3.5 text-[11px] text-[var(--text-muted)]">
       <div className="flex items-center gap-2">
@@ -15,7 +20,14 @@ export function UserStrip({ fullName, version }: Props) {
         </div>
         <span className="text-[var(--text)] font-medium">{fullName}</span>
       </div>
-      <span className="font-mono opacity-60">{version}</span>
+      <div className="flex items-center gap-2">
+        {!online && (
+          <span className="text-[10px] uppercase tracking-[0.15em] font-semibold py-0.5 px-2 rounded bg-[rgba(255,140,66,0.12)] text-[var(--orange)] border border-[rgba(255,140,66,0.3)]">
+            offline
+          </span>
+        )}
+        <span className="font-mono opacity-60">{version}</span>
+      </div>
     </div>
   );
 }

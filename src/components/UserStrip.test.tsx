@@ -14,4 +14,17 @@ describe('UserStrip', () => {
     render(<UserStrip fullName="Elmo Carlos Gomes" version="v1.0" />);
     expect(screen.getByText('EC')).toBeInTheDocument();
   });
+
+  it('renders ? for empty name', () => {
+    render(<UserStrip fullName="" version="v1.0" />);
+    expect(screen.getByText('?')).toBeInTheDocument();
+  });
+
+  it('renders offline pill when navigator.onLine is false', () => {
+    const original = Object.getOwnPropertyDescriptor(window.navigator, 'onLine');
+    Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: false });
+    render(<UserStrip fullName="Peter Bille" version="v1.0" />);
+    expect(screen.getByText('offline')).toBeInTheDocument();
+    if (original) Object.defineProperty(window.navigator, 'onLine', original);
+  });
 });
