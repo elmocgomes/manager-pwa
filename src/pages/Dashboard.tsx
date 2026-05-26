@@ -81,7 +81,7 @@ export function Dashboard() {
     <div className="max-w-[480px] mx-auto border-l border-r border-[var(--border)] min-h-screen">
       <div className="px-5 pb-8" style={{ paddingTop: 'env(safe-area-inset-top, 24px)' }}>
         <UserStrip fullName={profile.full_name} version={VERSION} />
-        <Header live={isToday} />
+        <Header live={isToday} lastSyncedAt={summary?.last_synced_at} />
         <RestaurantToggle
           restaurants={profile.restaurants}
           selected={selectedSlug}

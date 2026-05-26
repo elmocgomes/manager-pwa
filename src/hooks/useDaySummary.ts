@@ -19,6 +19,7 @@ export type DaySummary = {
   planned_hours: number;
   labor_pct: number;
   labor_tone: 'good' | 'ok' | 'warn';
+  last_synced_at: string | null;
 };
 
 export function useDaySummary(
