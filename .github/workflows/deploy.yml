@@ -16,6 +16,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vitest --run
       - env:
+          # GitHub Pages serves at a project subpath; Cloudflare Pages (the
+          # primary host) serves at root via the default base.
+          BASE_PATH:                /manager-pwa/
           VITE_SUPABASE_URL:        ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY:   ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: pnpm build
