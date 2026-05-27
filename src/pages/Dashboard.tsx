@@ -5,6 +5,7 @@ import { useRealtimeInvalidation } from '../hooks/useRealtimeInvalidation';
 import { UserStrip } from '../components/UserStrip';
 import { Header } from '../components/Header';
 import { LoadingBar } from '../components/LoadingBar';
+import { InstallBanner } from '../components/InstallBanner';
 import { RestaurantToggle } from '../components/RestaurantToggle';
 import { DayToggle } from '../components/DayToggle';
 import { RestaurantLine } from '../components/RestaurantLine';
@@ -81,6 +82,7 @@ export function Dashboard() {
   return (
     <div className="max-w-[480px] mx-auto border-l border-r border-[var(--border)] min-h-screen">
       <div className="px-5 pb-8" style={{ paddingTop: 'env(safe-area-inset-top, 24px)' }}>
+        <InstallBanner />
         <UserStrip fullName={profile.full_name} version={VERSION} />
         <Header live={isToday} lastSyncedAt={summary?.last_synced_at} />
         <RestaurantToggle
