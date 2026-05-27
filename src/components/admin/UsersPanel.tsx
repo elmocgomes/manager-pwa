@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi, type AdminUser } from '../../lib/adminApi';
-import { Btn, Card, Field, PanelHeader, Spinner, Status, Table, Th, Td, TextInput, Toolbar } from './ui';
+import { Btn, Card, DataCell, DataRow, DataTable, EmptyRow, Field, PanelHeader, Spinner, Status, TextInput, Toolbar } from './ui';
 import { useRestaurantOptions } from './useRestaurantOptions';
+
+const COLS = 'md:grid-cols-[1fr_1.4fr_200px]';
 
 function RestaurantChecks({ options, value, onChange }: {
   options: Array<{ slug: string; name: string }>;
@@ -39,16 +41,16 @@ function UserRow({ u, options }: { u: AdminUser; options: Array<{ slug: string; 
   });
 
   return (
-    <tr>
-      <Td>
+    <DataRow cols={COLS} className="md:items-start">
+      <DataCell label="Name">
         {u.full_name}
         {u.is_admin && (
           <span className="ml-2 text-[10px] uppercase tracking-[0.1em] text-[var(--accent)] border border-[rgba(88,166,255,0.3)] rounded px-1.5 py-0.5">
             admin
           </span>
         )}
-      </Td>
-      <Td>
+      </DataCell>
+      <DataCell label="Restaurants">
         {!editing ? (
           <span className="text-[var(--text-muted)]">{u.restaurants.length ? u.restaurants.join(', ') : '—'}</span>
         ) : (
@@ -57,18 +59,18 @@ function UserRow({ u, options }: { u: AdminUser; options: Array<{ slug: string; 
             {msg && <span className="text-[#ff8585] text-[12px]">{msg}</span>}
           </div>
         )}
-      </Td>
-      <Td className="text-right whitespace-nowrap">
+      </DataCell>
+      <DataCell className="md:text-right">
         {!editing ? (
           <Btn variant="ghost" onClick={() => { setSel(new Set(u.restaurants)); setEditing(true); }}>Edit access</Btn>
         ) : (
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 md:justify-end">
             <Btn variant="ghost" onClick={() => setEditing(false)}>Cancel</Btn>
             <Btn disabled={save.isPending} onClick={() => save.mutate()}>{save.isPending ? 'Saving…' : 'Save'}</Btn>
           </div>
         )}
-      </Td>
-    </tr>
+      </DataCell>
+    </DataRow>
   );
 }
 
@@ -103,22 +105,19 @@ export function UsersPanel() {
       {isLoading && <Spinner />}
 
       {data && (
-        <Card className="p-1 mb-6">
-          <Table>
-            <thead><tr><Th>Name</Th><Th>Restaurants</Th><Th /></tr></thead>
-            <tbody>
-              {data.map(u => <UserRow key={u.id} u={u} options={opts} />)}
-              {data.length === 0 && <tr><Td className="text-[var(--text-muted)]">No users yet.</Td></tr>}
-            </tbody>
-          </Table>
-        </Card>
+        <div className="mb-6">
+          <DataTable cols={COLS} headers={['Name', 'Restaurants', '']}>
+            {data.map(u => <UserRow key={u.id} u={u} options={opts} />)}
+            {data.length === 0 && <EmptyRow>No users yet.</EmptyRow>}
+          </DataTable>
+        </div>
       )}
 
       <h3 className="text-[13px] uppercase tracking-[0.12em] text-[var(--text-muted)] mb-2">Invite a manager</h3>
       <Card className="p-4">
         <Toolbar>
-          <Field label="Email"><TextInput type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="min-w-[220px]" /></Field>
-          <Field label="Full name"><TextInput value={name} onChange={e => setName(e.target.value)} placeholder="Jane Doe" className="min-w-[180px]" /></Field>
+          <Field label="Email"><TextInput type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="w-full md:min-w-[220px]" /></Field>
+          <Field label="Full name"><TextInput value={name} onChange={e => setName(e.target.value)} placeholder="Jane Doe" className="w-full md:min-w-[180px]" /></Field>
         </Toolbar>
         <div className="mb-4">
           <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--text-muted)] mb-2">Restaurant access</div>

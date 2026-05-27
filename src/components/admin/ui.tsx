@@ -63,23 +63,44 @@ export function Toolbar({ children }: { children: ReactNode }) {
   return <div className="flex flex-wrap items-end gap-3 mb-4">{children}</div>;
 }
 
-// Table helpers
-export function Table({ children }: { children: ReactNode }) {
+// Responsive "table": aligned columns on desktop (md+), stacked labeled cards
+// on mobile. `cols` is a Tailwind grid-template class applied only at md+
+// (e.g. 'md:grid-cols-[90px_1.4fr_100px]'); on mobile every row is a single
+// stacked column. Write `cols` as a literal string so Tailwind's JIT sees it.
+export function DataTable({ cols, headers, children }: { cols: string; headers: string[]; children: ReactNode }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-[13px]">{children}</table>
+    <Card className="overflow-hidden">
+      <div className={`hidden md:grid gap-3 px-4 py-2.5 border-b border-[var(--border)] text-[11px] uppercase tracking-[0.12em] text-[var(--text-muted)] ${cols}`}>
+        {headers.map((h, i) => <div key={i} className="min-w-0">{h}</div>)}
+      </div>
+      <div className="divide-y divide-[var(--border)]">{children}</div>
+    </Card>
+  );
+}
+
+export function DataRow({ cols, children, highlight = false, className = '' }: {
+  cols: string; children: ReactNode; highlight?: boolean; className?: string;
+}) {
+  return (
+    <div className={`px-4 py-3.5 grid grid-cols-1 gap-3 md:items-center ${cols} ${highlight ? 'bg-[rgba(88,166,255,0.06)]' : ''} ${className}`}>
+      {children}
     </div>
   );
 }
-export function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
+
+// One cell. On mobile the column label sits above the value; on desktop the
+// label is hidden (shown once in the header) and the value aligns to its column.
+export function DataCell({ label, children, className = '' }: { label?: string; children?: ReactNode; className?: string }) {
   return (
-    <th className={`text-left font-semibold text-[11px] uppercase tracking-[0.12em] text-[var(--text-muted)] px-3 py-2.5 border-b border-[var(--border)] ${className}`}>
-      {children}
-    </th>
+    <div className={`min-w-0 ${className}`}>
+      {label && <div className="md:hidden text-[10px] uppercase tracking-[0.12em] text-[var(--text-muted)] mb-1">{label}</div>}
+      <div className="min-w-0 text-[var(--text)] text-[14px] md:text-[13px]">{children}</div>
+    </div>
   );
 }
-export function Td({ children, className = '' }: { children?: ReactNode; className?: string }) {
-  return <td className={`px-3 py-2.5 border-b border-[var(--border)] text-[var(--text)] align-middle ${className}`}>{children}</td>;
+
+export function EmptyRow({ children }: { children: ReactNode }) {
+  return <div className="px-4 py-4 text-[13px] text-[var(--text-muted)]">{children}</div>;
 }
 
 export function Status({ kind, children }: { kind: 'ok' | 'error' | 'info'; children: ReactNode }) {

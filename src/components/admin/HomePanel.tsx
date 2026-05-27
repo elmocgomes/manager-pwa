@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '../../lib/adminApi';
 import { useUserProfile } from '../../contexts/ProfileContext';
-import { Card, PanelHeader, Spinner, Status, Table, Th, Td, fmtTs, relativeTime } from './ui';
+import { Card, DataCell, DataRow, DataTable, EmptyRow, PanelHeader, Spinner, Status, fmtTs, relativeTime } from './ui';
+
+const EVT_COLS = 'md:grid-cols-[120px_1fr_170px_1fr]';
 
 export function HomePanel() {
   const profile = useUserProfile();
@@ -32,26 +34,17 @@ export function HomePanel() {
           </div>
 
           <h3 className="text-[13px] uppercase tracking-[0.12em] text-[var(--text-muted)] mb-2">Recent webhook events</h3>
-          <Card className="p-1">
-            <Table>
-              <thead>
-                <tr><Th>Action</Th><Th>Entity</Th><Th>Received</Th><Th>Error</Th></tr>
-              </thead>
-              <tbody>
-                {data.recent_events.slice(0, 12).map((ev, i) => (
-                  <tr key={i}>
-                    <Td>{ev.action || ''}</Td>
-                    <Td className="font-mono text-[12px] text-[var(--text-muted)]">{ev.entity_id || ''}</Td>
-                    <Td className="text-[12px] text-[var(--text-muted)]">{fmtTs(ev.received_at)}</Td>
-                    <Td className="text-[#ff8585] text-[12px]">{ev.error || ''}</Td>
-                  </tr>
-                ))}
-                {data.recent_events.length === 0 && (
-                  <tr><Td className="text-[var(--text-muted)]">No recent events.</Td></tr>
-                )}
-              </tbody>
-            </Table>
-          </Card>
+          <DataTable cols={EVT_COLS} headers={['Action', 'Entity', 'Received', 'Error']}>
+            {data.recent_events.slice(0, 12).map((ev, i) => (
+              <DataRow key={i} cols={EVT_COLS}>
+                <DataCell label="Action">{ev.action || ''}</DataCell>
+                <DataCell label="Entity"><span className="font-mono text-[12px] text-[var(--text-muted)] break-all">{ev.entity_id || ''}</span></DataCell>
+                <DataCell label="Received"><span className="text-[12px] text-[var(--text-muted)]">{fmtTs(ev.received_at)}</span></DataCell>
+                <DataCell label="Error"><span className="text-[#ff8585] text-[12px]">{ev.error || ''}</span></DataCell>
+              </DataRow>
+            ))}
+            {data.recent_events.length === 0 && <EmptyRow>No recent events.</EmptyRow>}
+          </DataTable>
         </>
       )}
     </div>

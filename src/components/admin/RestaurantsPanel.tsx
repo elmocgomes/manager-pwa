@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi, type AdminRestaurant } from '../../lib/adminApi';
-import { Card, PanelHeader, SavedTick, Spinner, Status, Table, Th, Td, TextInput } from './ui';
+import { DataCell, DataRow, DataTable, PanelHeader, SavedTick, Spinner, Status, TextInput } from './ui';
+
+const COLS = 'md:grid-cols-[90px_1.4fr_110px_110px_70px_90px]';
 
 function RestaurantRow({ r }: { r: AdminRestaurant }) {
   const qc = useQueryClient();
@@ -26,32 +28,32 @@ function RestaurantRow({ r }: { r: AdminRestaurant }) {
   });
 
   return (
-    <tr>
-      <Td className="font-mono text-[12px] text-[var(--text-muted)]">{r.slug}</Td>
-      <Td>
+    <DataRow cols={COLS}>
+      <DataCell label="Slug"><span className="font-mono text-[12px] text-[var(--text-muted)]">{r.slug}</span></DataCell>
+      <DataCell label="Name">
         <TextInput value={name} onChange={e => setName(e.target.value)}
-          onBlur={() => name !== (r.name ?? '') && save.mutate({ name })} className="w-40" />
+          onBlur={() => name !== (r.name ?? '') && save.mutate({ name })} className="w-full md:w-44" />
         <SavedTick show={savedField === 'name'} />
-      </Td>
-      <Td>
+      </DataCell>
+      <DataCell label="Total seats">
         <TextInput type="number" value={seats} onChange={e => setSeats(e.target.value)}
-          onBlur={() => save.mutate({ total_seats: seats === '' ? null : Number(seats) })} className="w-24" />
+          onBlur={() => save.mutate({ total_seats: seats === '' ? null : Number(seats) })} className="w-full md:w-24" />
         <SavedTick show={savedField === 'total_seats'} />
-      </Td>
-      <Td>
+      </DataCell>
+      <DataCell label="Open hours">
         <TextInput type="number" value={hours} onChange={e => setHours(e.target.value)}
-          onBlur={() => save.mutate({ open_hours: hours === '' ? null : Number(hours) })} className="w-24" />
+          onBlur={() => save.mutate({ open_hours: hours === '' ? null : Number(hours) })} className="w-full md:w-24" />
         <SavedTick show={savedField === 'open_hours'} />
-      </Td>
-      <Td>
+      </DataCell>
+      <DataCell label="Active">
         <input type="checkbox" checked={active}
           onChange={e => { setActive(e.target.checked); save.mutate({ active: e.target.checked }); }}
           className="w-4 h-4 accent-[var(--accent)]" />
         <SavedTick show={savedField === 'active'} />
-      </Td>
-      <Td className="text-[var(--text-muted)]">{r.source_pos || ''}</Td>
-      {err && <Td className="text-[#ff8585] text-[12px]">{err}</Td>}
-    </tr>
+      </DataCell>
+      <DataCell label="POS"><span className="text-[var(--text-muted)]">{r.source_pos || ''}</span></DataCell>
+      {err && <div className="text-[#ff8585] text-[12px] md:col-span-6">{err}</div>}
+    </DataRow>
   );
 }
 
@@ -67,16 +69,9 @@ export function RestaurantsPanel() {
       {error && <Status kind="error">{(error as Error).message}</Status>}
       {isLoading && <Spinner />}
       {data && (
-        <Card className="p-1">
-          <Table>
-            <thead>
-              <tr><Th>Slug</Th><Th>Name</Th><Th>Total seats</Th><Th>Open hours</Th><Th>Active</Th><Th>POS</Th></tr>
-            </thead>
-            <tbody>
-              {data.map(r => <RestaurantRow key={r.slug} r={r} />)}
-            </tbody>
-          </Table>
-        </Card>
+        <DataTable cols={COLS} headers={['Slug', 'Name', 'Total seats', 'Open hours', 'Active', 'POS']}>
+          {data.map(r => <RestaurantRow key={r.slug} r={r} />)}
+        </DataTable>
       )}
     </div>
   );

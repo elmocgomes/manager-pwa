@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi, type AdminEmployee } from '../../lib/adminApi';
-import { Card, PanelHeader, SavedTick, Spinner, Status, Table, Th, Td, TextInput, Toolbar } from './ui';
+import { DataCell, DataRow, DataTable, EmptyRow, PanelHeader, SavedTick, Spinner, Status, TextInput, Toolbar } from './ui';
 import { RestaurantPicker } from './RestaurantPicker';
+
+const COLS = 'md:grid-cols-[1fr_1fr_1fr_100px_1.2fr_140px]';
 
 function EmployeeRow({ e }: { e: AdminEmployee }) {
   const qc = useQueryClient();
@@ -20,19 +22,19 @@ function EmployeeRow({ e }: { e: AdminEmployee }) {
   });
 
   return (
-    <tr>
-      <Td>{e.first_name || ''}</Td>
-      <Td>{e.last_name || ''}</Td>
-      <Td className="text-[var(--text-muted)]">{e.pos_name || ''}</Td>
-      <Td className="text-[var(--text-muted)]">{e.role || ''}</Td>
-      <Td className="font-mono text-[11px] text-[var(--text-muted)]">{e.fresto_uid || ''}</Td>
-      <Td>
+    <DataRow cols={COLS}>
+      <DataCell label="First name">{e.first_name || ''}</DataCell>
+      <DataCell label="Last name">{e.last_name || ''}</DataCell>
+      <DataCell label="POS name"><span className="text-[var(--text-muted)]">{e.pos_name || ''}</span></DataCell>
+      <DataCell label="Role"><span className="text-[var(--text-muted)]">{e.role || ''}</span></DataCell>
+      <DataCell label="Fresto UID"><span className="font-mono text-[11px] text-[var(--text-muted)] break-all">{e.fresto_uid || ''}</span></DataCell>
+      <DataCell label="PlanDay ID">
         <TextInput type="number" value={pd} onChange={ev => setPd(ev.target.value)}
-          onBlur={() => save.mutate(pd === '' ? null : Number(pd))} className="w-32" placeholder="—" />
+          onBlur={() => save.mutate(pd === '' ? null : Number(pd))} className="w-full md:w-32" placeholder="—" />
         <SavedTick show={saved} />
         {err && <span className="text-[#ff8585] text-[12px] ml-2">{err}</span>}
-      </Td>
-    </tr>
+      </DataCell>
+    </DataRow>
   );
 }
 
@@ -51,17 +53,10 @@ export function EmployeesPanel() {
       {error && <Status kind="error">{(error as Error).message}</Status>}
       {isLoading && <Spinner />}
       {data && (
-        <Card className="p-1">
-          <Table>
-            <thead>
-              <tr><Th>First</Th><Th>Last</Th><Th>POS name</Th><Th>Role</Th><Th>Fresto UID</Th><Th>PlanDay ID</Th></tr>
-            </thead>
-            <tbody>
-              {data.map(e => <EmployeeRow key={e.id} e={e} />)}
-              {data.length === 0 && <tr><Td className="text-[var(--text-muted)]">No employees.</Td></tr>}
-            </tbody>
-          </Table>
-        </Card>
+        <DataTable cols={COLS} headers={['First name', 'Last name', 'POS name', 'Role', 'Fresto UID', 'PlanDay ID']}>
+          {data.map(e => <EmployeeRow key={e.id} e={e} />)}
+          {data.length === 0 && <EmptyRow>No employees.</EmptyRow>}
+        </DataTable>
       )}
     </div>
   );

@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../lib/adminApi';
-import { Btn, Card, Field, PanelHeader, Spinner, Status, Table, Th, Td, TextInput, Toolbar } from './ui';
+import { Btn, DataCell, DataRow, DataTable, Field, PanelHeader, Spinner, Status, TextInput, Toolbar } from './ui';
 import { RestaurantPicker } from './RestaurantPicker';
 
+const COLS = 'md:grid-cols-[120px_60px_180px_1fr]';
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function todayISO(): string {
@@ -100,29 +101,24 @@ export function TargetsPanel() {
 
       {!isLoading && slug && (
         <>
-          <Card className="p-1">
-            <Table>
-              <thead><tr><Th>Date</Th><Th>Day</Th><Th>Target revenue (DKK)</Th><Th>Notes</Th></tr></thead>
-              <tbody>
-                {days.map(({ date, dow }) => (
-                  <tr key={date} className={isDirty(date) ? 'bg-[rgba(88,166,255,0.05)]' : ''}>
-                    <Td className="font-mono text-[12px]">{date}</Td>
-                    <Td className="text-[var(--text-muted)]">{dow}</Td>
-                    <Td>
-                      <TextInput type="number" step="0.01" min="0" value={revOf(date)}
-                        onChange={e => setRev(date, e.target.value)} className="w-36" placeholder="—" />
-                    </Td>
-                    <Td>
-                      <TextInput value={noteOf(date)} onChange={e => setNote(date, e.target.value)}
-                        className="w-full min-w-[160px]" placeholder="optional" />
-                    </Td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Card>
+          <DataTable cols={COLS} headers={['Date', 'Day', 'Target revenue (DKK)', 'Notes']}>
+            {days.map(({ date, dow }) => (
+              <DataRow key={date} cols={COLS} highlight={isDirty(date)}>
+                <DataCell label="Date"><span className="font-mono text-[12px]">{date}</span></DataCell>
+                <DataCell label="Day"><span className="text-[var(--text-muted)]">{dow}</span></DataCell>
+                <DataCell label="Target revenue (DKK)">
+                  <TextInput type="number" step="0.01" min="0" value={revOf(date)}
+                    onChange={e => setRev(date, e.target.value)} className="w-full md:w-40" placeholder="—" />
+                </DataCell>
+                <DataCell label="Notes">
+                  <TextInput value={noteOf(date)} onChange={e => setNote(date, e.target.value)}
+                    className="w-full" placeholder="optional" />
+                </DataCell>
+              </DataRow>
+            ))}
+          </DataTable>
 
-          <div className="sticky bottom-0 mt-4 py-3 flex items-center gap-3"
+          <div className="sticky bottom-0 mt-4 py-3 flex items-center gap-3 bg-[var(--bg)]"
                style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
             <Btn disabled={dirtyDates.length === 0 || save.isPending} onClick={() => save.mutate()}>
               {save.isPending ? 'Saving…' : `Save (${dirtyDates.length})`}

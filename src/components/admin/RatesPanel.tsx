@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi, type EmployeeGroupRate } from '../../lib/adminApi';
-import { Card, PanelHeader, SavedTick, Spinner, Status, Table, Th, Td, TextInput, Toolbar } from './ui';
+import { DataCell, DataRow, DataTable, EmptyRow, PanelHeader, SavedTick, Spinner, Status, TextInput, Toolbar } from './ui';
 import { RestaurantPicker } from './RestaurantPicker';
+
+const COLS = 'md:grid-cols-[1.4fr_150px_1fr]';
 
 function RateRow({ slug, r }: { slug: string; r: EmployeeGroupRate }) {
   const qc = useQueryClient();
@@ -20,18 +22,20 @@ function RateRow({ slug, r }: { slug: string; r: EmployeeGroupRate }) {
   });
 
   return (
-    <tr>
-      <Td>{r.group_name || <span className="text-[var(--text-muted)]">Group {r.planday_employee_group_id}</span>}</Td>
-      <Td className="font-mono text-[12px] text-[var(--text-muted)]">{r.planday_employee_group_id}</Td>
-      <Td>
-        <TextInput type="number" step="0.01" min="0" value={rate} onChange={e => setRate(e.target.value)}
-          onBlur={() => { const v = Number(rate); if (rate !== '' && !Number.isNaN(v) && v >= 0) save.mutate(v); }}
-          className="w-28" />
-        <span className="text-[var(--text-muted)] text-[12px] ml-1">DKK/h</span>
+    <DataRow cols={COLS}>
+      <DataCell label="Group">{r.group_name || <span className="text-[var(--text-muted)]">Group {r.planday_employee_group_id}</span>}</DataCell>
+      <DataCell label="PlanDay group ID"><span className="font-mono text-[12px] text-[var(--text-muted)]">{r.planday_employee_group_id}</span></DataCell>
+      <DataCell label="Hourly rate">
+        <span className="inline-flex items-center">
+          <TextInput type="number" step="0.01" min="0" value={rate} onChange={e => setRate(e.target.value)}
+            onBlur={() => { const v = Number(rate); if (rate !== '' && !Number.isNaN(v) && v >= 0) save.mutate(v); }}
+            className="w-28" />
+          <span className="text-[var(--text-muted)] text-[12px] ml-1">DKK/h</span>
+        </span>
         <SavedTick show={saved} />
         {err && <span className="text-[#ff8585] text-[12px] ml-2">{err}</span>}
-      </Td>
-    </tr>
+      </DataCell>
+    </DataRow>
   );
 }
 
@@ -50,15 +54,10 @@ export function RatesPanel() {
       {error && <Status kind="error">{(error as Error).message}</Status>}
       {isLoading && <Spinner />}
       {data && (
-        <Card className="p-1">
-          <Table>
-            <thead><tr><Th>Group</Th><Th>PlanDay group ID</Th><Th>Hourly rate</Th></tr></thead>
-            <tbody>
-              {data.map(r => <RateRow key={r.planday_employee_group_id} slug={slug} r={r} />)}
-              {data.length === 0 && <tr><Td className="text-[var(--text-muted)]">No rate rows yet.</Td></tr>}
-            </tbody>
-          </Table>
-        </Card>
+        <DataTable cols={COLS} headers={['Group', 'PlanDay group ID', 'Hourly rate']}>
+          {data.map(r => <RateRow key={r.planday_employee_group_id} slug={slug} r={r} />)}
+          {data.length === 0 && <EmptyRow>No rate rows yet.</EmptyRow>}
+        </DataTable>
       )}
     </div>
   );
