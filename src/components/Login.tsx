@@ -30,9 +30,11 @@ export function Login() {
       <form onSubmit={submit} className="w-full max-w-sm bg-[var(--panel)] border border-[var(--border)] rounded-2xl p-6 space-y-4">
         <h1 className="text-lg font-semibold">Manager Dashboard</h1>
         <input type="email" required placeholder="email@example.com"
+          name="email" autoComplete="username" inputMode="email" autoCapitalize="none" autoCorrect="off"
           value={email} onChange={e => setEmail(e.target.value)}
           className="w-full bg-[var(--panel-2)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm" />
         <input type="password" required placeholder="password"
+          name="password" autoComplete="current-password"
           value={password} onChange={e => setPassword(e.target.value)}
           className="w-full bg-[var(--panel-2)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm" />
         {msg && <div className={msg.kind === 'err' ? 'text-xs text-rose-400' : 'text-xs text-emerald-400'}>{msg.text}</div>}
