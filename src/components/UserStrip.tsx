@@ -1,7 +1,8 @@
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { ChangePassword } from './ChangePassword';
+import { navigate } from '../hooks/useHashRoute';
 
-type Props = { fullName: string; version: string };
+type Props = { fullName: string; version: string; isAdmin?: boolean };
 
 function initials(name: string) {
   const trimmed = name.trim();
@@ -10,7 +11,7 @@ function initials(name: string) {
   return parts.slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join('');
 }
 
-export function UserStrip({ fullName, version }: Props) {
+export function UserStrip({ fullName, version, isAdmin }: Props) {
   const online = useOnlineStatus();
   return (
     <div className="flex justify-between items-center mb-3.5 text-[11px] text-[var(--text-muted)]">
@@ -26,6 +27,14 @@ export function UserStrip({ fullName, version }: Props) {
           <span className="text-[10px] uppercase tracking-[0.15em] font-semibold py-0.5 px-2 rounded bg-[rgba(255,140,66,0.12)] text-[var(--orange)] border border-[rgba(255,140,66,0.3)]">
             offline
           </span>
+        )}
+        {isAdmin && (
+          <button
+            onClick={() => navigate('admin')}
+            className="text-[10px] uppercase tracking-[0.15em] font-semibold py-0.5 px-2 rounded bg-[rgba(88,166,255,0.12)] text-[var(--accent)] border border-[rgba(88,166,255,0.3)]"
+          >
+            Admin
+          </button>
         )}
         <ChangePassword />
         <span className="font-mono opacity-60">{version}</span>

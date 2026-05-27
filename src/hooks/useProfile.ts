@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 
 export type Restaurant = { id: string; slug: string; name: string };
-export type Profile = { id: string; full_name: string; restaurants: Restaurant[] };
+export type Profile = { id: string; full_name: string; is_admin: boolean; restaurants: Restaurant[] };
 
 export function useProfile(userId: string | undefined) {
   return useQuery<Profile>({
@@ -11,7 +11,7 @@ export function useProfile(userId: string | undefined) {
     queryFn: async () => {
       const { data: profile, error: pErr } = await supabase
         .from('user_profiles')
-        .select('id, full_name')
+        .select('id, full_name, is_admin')
         .eq('id', userId!)
         .maybeSingle();
       if (pErr) throw pErr;
@@ -29,7 +29,12 @@ export function useProfile(userId: string | undefined) {
           return Array.isArray(row.restaurants) ? row.restaurants : [row.restaurants];
         });
 
-      return { id: profile.id, full_name: profile.full_name, restaurants };
+      return {
+        id: profile.id,
+        full_name: profile.full_name,
+        is_admin: (profile as { is_admin?: boolean }).is_admin === true,
+        restaurants,
+      };
     },
   });
 }
