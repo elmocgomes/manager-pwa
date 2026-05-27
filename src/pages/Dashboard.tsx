@@ -4,6 +4,7 @@ import { useDaySummary } from '../hooks/useDaySummary';
 import { useRealtimeInvalidation } from '../hooks/useRealtimeInvalidation';
 import { UserStrip } from '../components/UserStrip';
 import { Header } from '../components/Header';
+import { LoadingBar } from '../components/LoadingBar';
 import { RestaurantToggle } from '../components/RestaurantToggle';
 import { DayToggle } from '../components/DayToggle';
 import { RestaurantLine } from '../components/RestaurantLine';
@@ -66,7 +67,7 @@ export function Dashboard() {
   const restaurant = profile.restaurants.find(x => x.slug === selectedSlug);
   const businessDate = isoDate(day);
   const isToday = day === 0;
-  const { data: summary, isPending } = useDaySummary(restaurant?.id, businessDate, isToday);
+  const { data: summary, isPending, isFetching } = useDaySummary(restaurant?.id, businessDate, isToday);
   useRealtimeInvalidation(restaurant?.id, isToday);
 
   if (!restaurant) {
@@ -90,6 +91,12 @@ export function Dashboard() {
         <DayToggle selected={day} onSelect={setDay} />
         <RestaurantLine name={restaurant.name} date={dateFromOffset(day)} />
 
+        {/* Fixed-height slot so layout doesn't jump when the bar appears */}
+        <div className="h-[3px] mt-3">{isFetching && <LoadingBar />}</div>
+
+        {/* Dim the metric cards while the first load is in flight so the
+            zeroed placeholders don't read as "no data". */}
+        <div className={`transition-opacity duration-300 ${isPending ? 'opacity-40' : 'opacity-100'}`}>
         <div className="text-[11px] text-[var(--text-muted)] uppercase tracking-[0.18em] mt-3.5 mb-1.5 ml-1">
           {day === 0 ? 'Today' : day === 1 ? 'Yesterday' : 'Two days ago'}
         </div>
@@ -139,6 +146,7 @@ export function Dashboard() {
             tone={summary?.labor_tone ?? 'ok'}
           />
         </section>
+        </div>
 
         <div className="text-[11px] text-[var(--text-muted)] uppercase tracking-[0.18em] mt-3.5 mb-1.5 ml-1">
           Closing notes
@@ -156,9 +164,6 @@ export function Dashboard() {
           />
         </section>
 
-        {isPending && (
-          <div className="text-center text-xs text-[var(--text-muted)] mt-4">Loading…</div>
-        )}
       </div>
     </div>
   );
