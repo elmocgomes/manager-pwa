@@ -1,4 +1,5 @@
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { ChangePassword } from './ChangePassword';
 
 type Props = { fullName: string; version: string };
 
@@ -20,12 +21,13 @@ export function UserStrip({ fullName, version }: Props) {
         </div>
         <span className="text-[var(--text)] font-medium">{fullName}</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         {!online && (
           <span className="text-[10px] uppercase tracking-[0.15em] font-semibold py-0.5 px-2 rounded bg-[rgba(255,140,66,0.12)] text-[var(--orange)] border border-[rgba(255,140,66,0.3)]">
             offline
           </span>
         )}
+        <ChangePassword />
         <span className="font-mono opacity-60">{version}</span>
       </div>
     </div>
