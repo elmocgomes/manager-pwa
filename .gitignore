@@ -27,3 +27,6 @@ playwright/.cache/
 *.njsproj
 *.sln
 *.sw?
+
+# Local env files (never commit — may hold secrets)
+.env*.local
