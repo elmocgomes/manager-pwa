@@ -2,15 +2,20 @@ import { useEffect, useState } from 'react';
 
 type Props = { name: string; date: Date };
 
+// Restaurants are in Denmark — show the business date and wall clock in
+// Copenhagen time regardless of where the viewer's device is.
+const RESTAURANT_TZ = 'Europe/Copenhagen';
+
 function fmtDate(d: Date): string {
-  const opts: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' };
-  return new Intl.DateTimeFormat('en-GB', opts).format(d);
+  return new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short', day: 'numeric', month: 'short', timeZone: RESTAURANT_TZ,
+  }).format(d);
 }
 
 function fmtClock(d: Date): string {
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mm = String(d.getMinutes()).padStart(2, '0');
-  return `${hh}:${mm}`;
+  return new Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: RESTAURANT_TZ,
+  }).format(d);
 }
 
 export function RestaurantLine({ name, date }: Props) {

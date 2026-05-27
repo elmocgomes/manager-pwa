@@ -36,19 +36,28 @@ function writeParams(r: string, d: 0 | 1 | 2) {
   }
 }
 
+// The restaurants are in Denmark and the data's business_date is
+// Copenhagen-based, so "today/yesterday" must be computed in Copenhagen time —
+// not the viewer's browser timezone (which would drift around midnight).
+const RESTAURANT_TZ = 'Europe/Copenhagen';
+
+function copenhagenToday(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: RESTAURANT_TZ, year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date());
+}
+
 function isoDate(offset: 0 | 1 | 2): string {
-  const t = new Date();
-  t.setDate(t.getDate() - offset);
-  const y = t.getFullYear();
-  const m = String(t.getMonth() + 1).padStart(2, '0');
-  const d = String(t.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+  const [y, m, d] = copenhagenToday().split('-').map(Number);
+  // Anchor at UTC noon so day arithmetic never crosses a timezone boundary.
+  const dt = new Date(Date.UTC(y, m - 1, d, 12));
+  dt.setUTCDate(dt.getUTCDate() - offset);
+  return dt.toISOString().slice(0, 10);
 }
 
 function dateFromOffset(offset: 0 | 1 | 2): Date {
-  const t = new Date();
-  t.setDate(t.getDate() - offset);
-  return t;
+  const [y, m, d] = isoDate(offset).split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d, 12)); // noon-UTC anchor → stable calendar date
 }
 
 export function Dashboard() {
