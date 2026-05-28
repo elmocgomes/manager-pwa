@@ -3,8 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi, type AdminUser } from '../../lib/adminApi';
 import { Btn, Card, DataCell, DataRow, DataTable, EmptyRow, Field, PanelHeader, Spinner, Status, TextInput, Toolbar } from './ui';
 import { useRestaurantOptions } from './useRestaurantOptions';
+import { useUserProfile } from '../../contexts/ProfileContext';
 
-const COLS = 'md:grid-cols-[1fr_1.4fr_200px]';
+const COLS = 'md:grid-cols-[1fr_1.2fr_260px]';
 
 function RestaurantChecks({ options, value, onChange }: {
   options: Array<{ slug: string; name: string }>;
@@ -28,7 +29,7 @@ function RestaurantChecks({ options, value, onChange }: {
   );
 }
 
-function UserRow({ u, options }: { u: AdminUser; options: Array<{ slug: string; name: string }> }) {
+function UserRow({ u, options, isSelf }: { u: AdminUser; options: Array<{ slug: string; name: string }>; isSelf: boolean }) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [sel, setSel] = useState<Set<string>>(new Set(u.restaurants));
@@ -40,6 +41,21 @@ function UserRow({ u, options }: { u: AdminUser; options: Array<{ slug: string; 
     onError: (e) => setMsg((e as Error).message),
   });
 
+  const del = useMutation({
+    mutationFn: () => adminApi.deleteUser(u.id),
+    onSuccess: () => { setMsg(null); qc.invalidateQueries({ queryKey: ['admin', 'users'] }); },
+    onError: (e) => setMsg((e as Error).message),
+  });
+
+  const confirmDelete = () => {
+    const adminNote = u.is_admin ? '\n\nThey are an ADMIN — they will lose admin access immediately.' : '';
+    const ok = confirm(
+      `Permanently delete ${u.full_name}?\n\n` +
+      `They will lose access immediately and this cannot be undone.${adminNote}`,
+    );
+    if (ok) del.mutate();
+  };
+
   return (
     <DataRow cols={COLS} className="md:items-start">
       <DataCell label="Name">
@@ -49,6 +65,11 @@ function UserRow({ u, options }: { u: AdminUser; options: Array<{ slug: string; 
             admin
           </span>
         )}
+        {isSelf && (
+          <span className="ml-2 text-[10px] uppercase tracking-[0.1em] text-[var(--text-muted)] border border-[var(--border)] rounded px-1.5 py-0.5">
+            you
+          </span>
+        )}
       </DataCell>
       <DataCell label="Restaurants">
         {!editing ? (
@@ -56,13 +77,20 @@ function UserRow({ u, options }: { u: AdminUser; options: Array<{ slug: string; 
         ) : (
           <div className="flex flex-col gap-2">
             <RestaurantChecks options={options} value={sel} onChange={setSel} />
-            {msg && <span className="text-[#ff8585] text-[12px]">{msg}</span>}
           </div>
         )}
+        {msg && <span className="text-[#ff8585] text-[12px] block mt-1">{msg}</span>}
       </DataCell>
       <DataCell className="md:text-right">
         {!editing ? (
-          <Btn variant="ghost" onClick={() => { setSel(new Set(u.restaurants)); setEditing(true); }}>Edit access</Btn>
+          <div className="flex flex-wrap gap-2 md:justify-end">
+            <Btn variant="ghost" onClick={() => { setSel(new Set(u.restaurants)); setEditing(true); }}>Edit access</Btn>
+            {!isSelf && (
+              <Btn variant="danger" disabled={del.isPending} onClick={confirmDelete}>
+                {del.isPending ? 'Deleting…' : 'Delete'}
+              </Btn>
+            )}
+          </div>
         ) : (
           <div className="flex gap-2 md:justify-end">
             <Btn variant="ghost" onClick={() => setEditing(false)}>Cancel</Btn>
@@ -76,6 +104,7 @@ function UserRow({ u, options }: { u: AdminUser; options: Array<{ slug: string; 
 
 export function UsersPanel() {
   const qc = useQueryClient();
+  const me = useUserProfile();
   const { data: options } = useRestaurantOptions();
   const { data, isLoading, error } = useQuery({ queryKey: ['admin', 'users'], queryFn: adminApi.listUsers });
 
@@ -107,7 +136,7 @@ export function UsersPanel() {
       {data && (
         <div className="mb-6">
           <DataTable cols={COLS} headers={['Name', 'Restaurants', '']}>
-            {data.map(u => <UserRow key={u.id} u={u} options={opts} />)}
+            {data.map(u => <UserRow key={u.id} u={u} options={opts} isSelf={u.id === me.id} />)}
             {data.length === 0 && <EmptyRow>No users yet.</EmptyRow>}
           </DataTable>
         </div>

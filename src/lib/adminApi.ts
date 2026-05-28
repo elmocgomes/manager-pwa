@@ -113,4 +113,6 @@ export const adminApi = {
     request<{ ok: true; user_id: string }>('POST', '/api/users/invite', { email, full_name, restaurants }),
   setUserRestaurants: (userId: string, restaurants: string[]) =>
     request<{ ok: true }>('PATCH', `/api/users/${encodeURIComponent(userId)}/restaurants`, { restaurants }),
+  deleteUser: (userId: string) =>
+    request<{ ok: true }>('DELETE', `/api/users/${encodeURIComponent(userId)}`),
 };
