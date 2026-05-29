@@ -5,7 +5,7 @@ import { Btn, Card, DataCell, DataRow, DataTable, EmptyRow, Field, PanelHeader, 
 import { useRestaurantOptions } from './useRestaurantOptions';
 import { useUserProfile } from '../../contexts/ProfileContext';
 
-const COLS = 'md:grid-cols-[1fr_1.2fr_260px]';
+const COLS = 'md:grid-cols-[1fr_1.4fr_1fr_240px]';
 
 function RestaurantChecks({ options, value, onChange }: {
   options: Array<{ slug: string; name: string }>;
@@ -70,6 +70,11 @@ function UserRow({ u, options, isSelf }: { u: AdminUser; options: Array<{ slug: 
             you
           </span>
         )}
+      </DataCell>
+      <DataCell label="Email">
+        {u.email
+          ? <span className="text-[var(--text-muted)] break-all">{u.email}</span>
+          : <span className="text-[var(--text-muted)] italic">—</span>}
       </DataCell>
       <DataCell label="Restaurants">
         {!editing ? (
@@ -155,7 +160,7 @@ export function UsersPanel() {
 
       {data && (
         <div className="mb-6">
-          <DataTable cols={COLS} headers={['Name', 'Restaurants', '']}>
+          <DataTable cols={COLS} headers={['Name', 'Email', 'Restaurants', '']}>
             {data.map(u => <UserRow key={u.id} u={u} options={opts} isSelf={u.id === me.id} />)}
             {data.length === 0 && <EmptyRow>No users yet.</EmptyRow>}
           </DataTable>

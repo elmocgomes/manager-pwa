@@ -63,7 +63,7 @@ export type EmployeeGroupRate = {
   restaurant_id: string; planday_employee_group_id: number;
   group_name: string | null; hourly_rate_dkk: number;
 };
-export type AdminUser = { id: string; full_name: string; is_admin: boolean; restaurants: string[] };
+export type AdminUser = { id: string; full_name: string; email: string | null; is_admin: boolean; restaurants: string[] };
 
 // ── Endpoints ─────────────────────────────────────────────────────────────
 export const adminApi = {
