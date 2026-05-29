@@ -1,8 +1,16 @@
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { ChangePassword } from './ChangePassword';
 import { navigate } from '../hooks/useHashRoute';
+import { supabase } from '../lib/supabase';
 
 type Props = { fullName: string; version: string; isAdmin?: boolean };
+
+async function handleSignOut() {
+  if (!confirm('Sign out?')) return;
+  await supabase.auth.signOut();
+  // SessionProvider's onAuthStateChange picks this up and AuthGate swaps in
+  // the Login screen — no manual redirect needed.
+}
 
 function initials(name: string) {
   const trimmed = name.trim();
@@ -37,6 +45,14 @@ export function UserStrip({ fullName, version, isAdmin }: Props) {
           </button>
         )}
         <ChangePassword />
+        <button
+          type="button"
+          onClick={handleSignOut}
+          aria-label="Sign out"
+          className="text-[10px] uppercase tracking-[0.12em] text-[var(--text-muted)] hover:text-[var(--text)] underline-offset-2 hover:underline"
+        >
+          Sign out
+        </button>
         <span className="font-mono opacity-60">{version}</span>
       </div>
     </div>
