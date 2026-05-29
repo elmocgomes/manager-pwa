@@ -111,6 +111,11 @@ export const adminApi = {
   listUsers: () => request<{ results: AdminUser[] }>('GET', '/api/users').then(r => r.results),
   inviteUser: (email: string, full_name: string, restaurants: string[]) =>
     request<{ ok: true; user_id: string }>('POST', '/api/users/invite', { email, full_name, restaurants }),
+  // Create the user and return a one-time URL to share manually (no email sent).
+  // Useful when Supabase's email service is rate-limited or you'd rather pass
+  // the link via Slack/WhatsApp.
+  inviteUserLink: (email: string, full_name: string, restaurants: string[]) =>
+    request<{ ok: true; user_id: string; action_link: string }>('POST', '/api/users/invite-link', { email, full_name, restaurants }),
   setUserRestaurants: (userId: string, restaurants: string[]) =>
     request<{ ok: true }>('PATCH', `/api/users/${encodeURIComponent(userId)}/restaurants`, { restaurants }),
   deleteUser: (userId: string) =>

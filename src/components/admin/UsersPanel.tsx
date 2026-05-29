@@ -117,14 +117,34 @@ export function UsersPanel() {
     mutationFn: () => adminApi.inviteUser(email.trim(), name.trim(), [...sel]),
     onSuccess: () => {
       setMsg({ kind: 'ok', text: `Invite sent to ${email.trim()}.` });
-      setEmail(''); setName(''); setSel(new Set());
+      setEmail(''); setName(''); setSel(new Set()); setLinkResult(null);
       qc.invalidateQueries({ queryKey: ['admin', 'users'] });
     },
     onError: (e) => setMsg({ kind: 'error', text: (e as Error).message }),
   });
 
-  const canInvite = !!email.trim() && !!name.trim() && sel.size > 0 && !invite.isPending;
+  const [linkResult, setLinkResult] = useState<{ link: string; name: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const inviteLink = useMutation({
+    mutationFn: () => adminApi.inviteUserLink(email.trim(), name.trim(), [...sel]),
+    onSuccess: (r) => {
+      setLinkResult({ link: r.action_link, name: name.trim() });
+      setMsg(null);
+      qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
+    onError: (e) => setMsg({ kind: 'error', text: (e as Error).message }),
+  });
+
+  const pending = invite.isPending || inviteLink.isPending;
+  const canInvite = !!email.trim() && !!name.trim() && sel.size > 0 && !pending;
   const opts = options ?? [];
+
+  const copyLink = async () => {
+    if (!linkResult) return;
+    try { await navigator.clipboard.writeText(linkResult.link); setCopied(true); setTimeout(() => setCopied(false), 1500); }
+    catch { /* clipboard may be denied — the link is still visible to copy by hand */ }
+  };
 
   return (
     <div>
@@ -152,7 +172,38 @@ export function UsersPanel() {
           <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--text-muted)] mb-2">Restaurant access</div>
           <RestaurantChecks options={opts} value={sel} onChange={setSel} />
         </div>
-        <Btn disabled={!canInvite} onClick={() => invite.mutate()}>{invite.isPending ? 'Sending…' : 'Send invite'}</Btn>
+        <div className="flex flex-wrap gap-2">
+          <Btn disabled={!canInvite} onClick={() => invite.mutate()}>{invite.isPending ? 'Sending…' : 'Send invite email'}</Btn>
+          <Btn variant="ghost" disabled={!canInvite} onClick={() => inviteLink.mutate()}>
+            {inviteLink.isPending ? 'Generating…' : 'Generate link instead'}
+          </Btn>
+        </div>
+        <p className="text-[11px] text-[var(--text-muted)] mt-2">
+          Use "Generate link" when the email service is rate-limited — you'll get a one-time URL to send manually.
+        </p>
+
+        {linkResult && (
+          <div className="mt-4 p-3 rounded-lg border border-[var(--accent)] bg-[rgba(88,166,255,0.06)]">
+            <div className="text-[12px] text-[var(--text-muted)] mb-2">
+              One-time link for <span className="text-[var(--text)]">{linkResult.name}</span>. Send it via Slack/WhatsApp/whatever — it expires in ~24 h.
+            </div>
+            <div className="flex gap-2">
+              <input
+                readOnly
+                value={linkResult.link}
+                onFocus={e => e.currentTarget.select()}
+                className="flex-1 bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-[12px] font-mono text-[var(--text-muted)] break-all min-w-0"
+              />
+              <Btn variant="ghost" onClick={copyLink}>{copied ? '✓ Copied' : 'Copy'}</Btn>
+            </div>
+            <button
+              onClick={() => { setLinkResult(null); setEmail(''); setName(''); setSel(new Set()); }}
+              className="mt-2 text-[11px] text-[var(--text-muted)] hover:text-[var(--text)] underline"
+            >
+              Clear and invite someone else
+            </button>
+          </div>
+        )}
       </Card>
     </div>
   );
