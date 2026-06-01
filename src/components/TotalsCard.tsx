@@ -15,7 +15,7 @@ export function TotalsCard({ totalRevenue, totalGuests, isToday }: Props) {
           {fmtN(totalRevenue)}<span className="text-[15px] text-[var(--text-muted)] font-normal ml-1">DKK</span>
         </div>
         <div className="text-[11px] text-[var(--text-muted)] mt-1.5">
-          Net, excl. VAT · {isToday ? 'live' : 'final'}
+          Incl. VAT · {isToday ? 'live' : 'final'}
         </div>
       </div>
       <div className="bg-[var(--panel)] border border-[var(--border)] rounded-2xl p-4">
